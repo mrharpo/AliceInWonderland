@@ -1,11 +1,11 @@
 # import asyncio
 from json import decoder, loads
 from socket import socket, AF_INET, SOCK_DGRAM
-
+from time import sleep
 from OSC import OSCClient, OSCMessage
 
 
-import threading
+from threading import Thread
 
 
 class Listener:
@@ -33,7 +33,7 @@ class Listener:
             self.last_message = None
 
     def get_message(self):
-        t = threading.Thread(target=self._get_message, daemon=True)
+        t = Thread(target=self._get_message, daemon=True)
         t.start()
         t.join(timeout=0.3)
         return self.last_message
@@ -48,6 +48,7 @@ class Client:
 
     def send(self, *args):
         self.client.send(OSCMessage(*args))
+        sleep(0.003)
 
 
 class Interface:

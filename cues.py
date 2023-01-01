@@ -56,24 +56,37 @@ def get_lines(file):
 
 def lines_to_mutes(lines):
     i = Interface()
-    character = ''
-    for n, line in enumerate(lines):
+    last_character = ''
+    last_line = ''
+    for n, line in enumerate(lines, 1):
 
         print(n, line)
         # i.client.send('/new', 'group')
-        # i.client.send('/cue/selected/number', n)
         if not line[0]:
             continue
-
-        # mute last character
-        i.client.send('/new', 'midi')
-        i.client.send('/cue/selected/name', f'mute {character}')
 
         # unmute character
         character = line[0]
         i.client.send('/new', 'midi')
         i.client.send('/cue/selected/name', f'unmute {character}')
-        i.client.send('/cue/selected/notes', line[1])
+        i.client.send('/cue/selected/number', n)
+        i.client.send('/cue/selected/notes', last_n(last_line))
         i.client.send('/cue/selected/continueMode', 1)
 
-        sleep(0.01)
+        if last_character:
+            # mute last character
+            i.client.send('/new', 'midi')
+            i.client.send('/cue/selected/name', f'mute {last_character}')
+
+        last_line = line[1]
+        last_character = character
+
+
+def first_n(text, n=5):
+    words = text.split(' ')
+    return ' '.join(words[:n])
+
+
+def last_n(text, n=5):
+    words = text.split(' ')
+    return ' '.join(words[-n:])
