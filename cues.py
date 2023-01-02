@@ -59,24 +59,32 @@ def lines_to_mutes(lines):
     last_character = ''
     last_line = ''
     for n, line in enumerate(lines, 1):
-
         print(n, line)
-        # i.client.send('/new', 'group')
+
         if not line[0]:
             continue
 
-        # unmute character
+        # Create group
         character = line[0]
-        i.client.send('/new', 'midi')
-        i.client.send('/cue/selected/name', f'unmute {character}')
+        group = i.send_and_receive('/new', 'group')['data']
+
         i.client.send('/cue/selected/number', n)
-        i.client.send('/cue/selected/notes', last_n(last_line))
-        i.client.send('/cue/selected/continueMode', 1)
+        cleaned_last_line_fragment = last_n(last_line).replace('\n', '')
+        i.client.send(
+            '/cue/selected/name', f'{last_character}: ... {cleaned_last_line_fragment}'
+        )
+        i.client.send('/cue/selected/notes', last_line)
+
+        # unmute character
+        q_id = i.send_and_receive('/new', 'midi')['data']
+        i.client.send('/cue/selected/name', f'unmute {character}')
+        i.client.send(f'/move/{q_id}', [1, group])
 
         if last_character:
             # mute last character
-            i.client.send('/new', 'midi')
+            q_id = i.send_and_receive('/new', 'midi')['data']
             i.client.send('/cue/selected/name', f'mute {last_character}')
+            i.client.send(f'/move/{q_id}', [2, group])
 
         last_line = line[1]
         last_character = character
