@@ -90,6 +90,28 @@ def lines_to_mutes(lines):
         last_character = character
 
 
+def mute_sheet_for_character(lines, character):
+    mute_state = None
+    mutes = [None] * len(lines)
+    for l, line in enumerate(lines):
+        if line[0] == character and mute_state == None:
+            # unmute
+            mute_state = 0
+        if mute_state == 0 and line[0] != character:
+            # If more than 3 lines away, mute
+            if character_next_speaks(lines[l + 1 : l + 5], character) == None:
+                # mute
+                mute_state = None
+        mutes[l] = mute_state
+    return mutes
+
+
+def character_next_speaks(lines, character):
+    for l, line in enumerate(lines):
+        if line[0] == character:
+            return l
+
+
 def first_n(text, n=5):
     words = text.split(' ')
     return ' '.join(words[:n])
