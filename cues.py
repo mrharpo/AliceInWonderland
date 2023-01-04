@@ -120,7 +120,7 @@ def last_n(text, n=5):
     return ' '.join(words[-n:])
 
 
-if __name__ == '__main__':
+def main():
     from pprint import pp
 
     lines = get_lines('penzance.csv')
@@ -128,4 +128,15 @@ if __name__ == '__main__':
     for character in character_list(lines):
         mute_sheet += mute_sheet_for_character(lines, character)
     mute_sheet = sorted(mute_sheet, key=lambda l: l[0])
-    pp(mute_sheet)
+    grouped_mute_sheet = {}
+    for m in mute_sheet:
+        if grouped_mute_sheet.get(m[0]):
+            grouped_mute_sheet[m[0]].append(m[1:])
+        else:
+            grouped_mute_sheet[m[0]] = [m[1:]]
+
+    pp(grouped_mute_sheet)
+
+
+if __name__ == '__main__':
+    main()
