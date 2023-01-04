@@ -39,18 +39,18 @@ class Client:
         self.client = OSCClient()
         self.client.connect((address, port))
 
-    def send(self, *args):
-        self.client.send(OSCMessage(*args))
-        sleep(0.003)
-
 
 class Interface:
     def __init__(self):
         self.server = Listener()
         self.client = Client()
 
+    def send(self, *args):
+        self.client.send(OSCMessage(*args))
+        sleep(0.003)
+
     def send_and_receive(self, *message):
-        self.client.send(*message)
+        self.send(*message)
         response = self.server.get_message()
         while not response or message[0] not in response['address']:
             print('wrong response:', response)

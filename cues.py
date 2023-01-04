@@ -28,11 +28,11 @@ def get_lighting_cues(file, page_offset=9):
 def lighting_to_qlab(cues):
     i = Interface()
     for cue in cues:
-        i.client.send(f'/new', 'network')
-        i.client.send(f'/cue/selected/number', cue['q'])
-        i.client.send(f'/cue/selected/name', cue['name'])
-        i.client.send(f'/cue/selected/customString', f'/eos/cue/{cue["q"]}/fire')
-        i.client.send(f'/cue/selected/notes', f'p{cue["page"]}')
+        i.send(f'/new', 'network')
+        i.send(f'/cue/selected/number', cue['q'])
+        i.send(f'/cue/selected/name', cue['name'])
+        i.send(f'/cue/selected/customString', f'/eos/cue/{cue["q"]}/fire')
+        i.send(f'/cue/selected/notes', f'p{cue["page"]}')
 
 
 def get_lines(file):
@@ -58,23 +58,23 @@ def lines_to_mutes(lines):
         character = line[0]
         group = i.send_and_receive('/new', 'group')['data']
 
-        i.client.send('/cue/selected/number', n)
+        i.send('/cue/selected/number', n)
         cleaned_last_line_fragment = last_n(last_line).replace('\n', '')
-        i.client.send(
+        i.send(
             '/cue/selected/name', f'{last_character}: ... {cleaned_last_line_fragment}'
         )
-        i.client.send('/cue/selected/notes', last_line)
+        i.send('/cue/selected/notes', last_line)
 
         # unmute character
         q_id = i.send_and_receive('/new', 'midi')['data']
-        i.client.send('/cue/selected/name', f'unmute {character}')
-        i.client.send(f'/move/{q_id}', [1, group])
+        i.send('/cue/selected/name', f'unmute {character}')
+        i.send(f'/move/{q_id}', [1, group])
 
         if last_character:
             # mute last character
             q_id = i.send_and_receive('/new', 'midi')['data']
-            i.client.send('/cue/selected/name', f'mute {last_character}')
-            i.client.send(f'/move/{q_id}', [2, group])
+            i.send('/cue/selected/name', f'mute {last_character}')
+            i.send(f'/move/{q_id}', [2, group])
 
         last_line = line[1]
         last_character = character
