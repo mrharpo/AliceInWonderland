@@ -111,19 +111,17 @@ def character_next_speaks(lines, character):
 
 
 def first_n(text, n=5):
-    words = text.split(' ')
+    words = text.replace('\n', '').split(' ')
     return ' '.join(words[:n])
 
 
 def last_n(text, n=5):
-    words = text.split(' ')
+    words = text.replace('\n', '').split(' ')
     return ' '.join(words[-n:])
 
 
-def main():
-    from pprint import pp
+def auto_mute_sheet(lines):
 
-    lines = get_lines('penzance.csv')
     mute_sheet = []
     for character in character_list(lines):
         mute_sheet += mute_sheet_for_character(lines, character)
@@ -134,9 +132,37 @@ def main():
             grouped_mute_sheet[m[0]].append(m[1:])
         else:
             grouped_mute_sheet[m[0]] = [m[1:]]
+    return grouped_mute_sheet
 
-    pp(grouped_mute_sheet)
+
+def auto_mute_sheet_to_qlab(mute_sheet):
+    i = Interface()
+
+    for line_no in mute_sheet:
+        # create group
+        group_id = i.send_and_receive('/new', 'group')['data']
+        i.send('/cue/selected/number', line_no)
+        last_line = mute_sheet[line_no][0][2]
+        i.send(
+            '/cue/selected/name',
+            last_line[0] + ': ... ' + last_n(last_line[1]),
+        )
+        i.send('/cue/selected/notes', last_line[1])
+        for mute_cue in mute_sheet[line_no]:
+            # send mute cue
+            q_id = i.send_and_receive('/new', 'midi')['data']
+            i.send(
+                '/cue/selected/name',
+                f"{'un' if mute_cue[1] == 0 else ''}mute {mute_cue[0]}",
+            )
+            i.send(f'/move/{q_id}', [1, group_id])
 
 
 if __name__ == '__main__':
-    main()
+    from pprint import pp
+
+    lines = get_lines('penzance.csv')
+    mutes = auto_mute_sheet(lines)
+
+    pp(mutes)
+    auto_mute_sheet_to_qlab(mutes)

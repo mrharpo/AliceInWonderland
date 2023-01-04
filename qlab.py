@@ -46,8 +46,7 @@ class Interface:
         self.client = Client()
 
     def send(self, *args):
-        self.client.send(OSCMessage(*args))
-        sleep(0.003)
+        self.client.client.send(OSCMessage(*args))
 
     def send_and_receive(self, *message):
         self.send(*message)
