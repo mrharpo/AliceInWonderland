@@ -189,11 +189,76 @@ def auto_mute_sheet_to_qlab(mute_sheet):
             i.send(f'/move/{q_id}', [1, group_id])
 
 
+def auto_dca(lines, groups):
+    # dca state
+    dca = []
+    # cue list
+    cues = {}
+    # characters = character_list(lines)
+
+    for l, line in enumerate(lines):
+        characters = line[0]
+        cue = []
+        # next available dca
+        d = len(dca)
+        # set fader 0
+        for character in groups.get(characters, [line[0]]):
+            if character in [chars for chars in dca]:
+                raise AssignmentException(
+                    f'{character} is already in active dca {dca} on line {l}: {line}'
+                )
+
+            # assign character to dca
+            cue.append(
+                SoundCue(
+                    n=l,
+                    action=f'dca assign {character}',
+                    notes=lines[l - 1][1],
+                    q=f'{character}: ... {last_n(lines[l - 1][1])}',
+                )
+            )
+
+            # if character is muted:
+            # unmute character
+            # if last character does not speak for 5 lines
+            # mute last character
+            cues[l] = cue
+    return cues
+
+
 if __name__ == '__main__':
     from pprint import pp
 
-    lines = get_lines('penzance.csv')
-    mutes = auto_mute_sheet(lines)
+    lines = filter_blank_lines(get_lines('penzance.csv'))[1:]
+    # mutes = auto_mute_sheet(lines, groups)
+    # pp(mutes)
+    # auto_mute_sheet_to_qlab(mutes)
 
-    pp(mutes)
-    auto_mute_sheet_to_qlab(mutes)
+    groups = {
+        'ALL': [
+            'FREDERIC',
+            'MABEL',
+            'RUTH',
+            'KING',
+            'SAMUEL',
+            'GENERAL',
+            'EDITH',
+            'ISABEL',
+            'KATE',
+        ],
+        'PIRATES': ['KING', 'SAMUEL', 'CHORUS 1', 'CHORUS 2'],
+        'GIRLS': ['EDITH', 'ISABEL', 'KATE'],
+        'CHORUS': ['CHORUS 1', 'CHORUS 2', 'EDITH', 'ISABEL', 'KATE'],
+        'ENSEMBLE': [
+            'FREDERIC',
+            'MABEL',
+            'KING',
+            'SAMUEL',
+            'GENERAL',
+            'EDITH',
+            'ISABEL',
+            'KATE',
+        ],
+    }
+
+    pp(auto_dca(lines, groups))
