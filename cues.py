@@ -2,9 +2,31 @@ from qlab import Interface
 
 from csv import reader
 from pydantic import BaseModel
+from exceptions import AssignmentException
 
 
 class Cue(BaseModel):
+    # the action to perform
+    action: str
+    # cue number
+    n: int | None = None
+    # cue name
+    q: str = ''
+    # cue notes
+    notes: str = ''
+
+    def __call__(self, *args, **kwargs) -> str:
+        return self.action
+
+    def __str__(self) -> str:
+        return self.action
+
+
+class SoundCue(Cue):
+    pass
+
+
+class LightCue(Cue):
     pass
 
 
@@ -42,6 +64,11 @@ def get_lines(file):
         for row in r:
             lines.append(row)
         return lines
+
+
+def filter_blank_lines(lines):
+    # Filter out lines with no character
+    return [line for line in lines if line[0]]
 
 
 def lines_to_mutes(lines):
@@ -88,7 +115,9 @@ def mute_sheet_for_character(lines, character):
         if line[0] == character and mute_state == None:
             # unmute
             mute_state = 0
-            mutes.append([l + 1, character, mute_state, lines[l - 1]])
+            mutes.append(
+                [l + 1, character, mute_state, lines[l - 1] if l else ['', 'TOS']]
+            )
 
         # if we are unmuted and not speaking
         if mute_state == 0 and line[0] != character:
