@@ -121,6 +121,7 @@ def last_n(text, n=5):
 
 
 def auto_mute_sheet(lines):
+    # {line_no: mute_group[mute_sheet], ...}
 
     mute_sheet = []
     for character in character_list(lines):
@@ -136,19 +137,20 @@ def auto_mute_sheet(lines):
 
 
 def auto_mute_sheet_to_qlab(mute_sheet):
+    # {line_no: mute_group[mute_sheet], ...}
     i = Interface()
 
-    for line_no in mute_sheet:
+    for line_no, mute_group in mute_sheet.items():
         # create group
         group_id = i.send_and_receive('/new', 'group')['data']
         i.send('/cue/selected/number', line_no)
-        last_line = mute_sheet[line_no][0][2]
+        last_line = mute_group[0][2]
         i.send(
             '/cue/selected/name',
             last_line[0] + ': ... ' + last_n(last_line[1]),
         )
         i.send('/cue/selected/notes', last_line[1])
-        for mute_cue in mute_sheet[line_no]:
+        for mute_cue in mute_group:
             # send mute cue
             q_id = i.send_and_receive('/new', 'midi')['data']
             i.send(
