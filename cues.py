@@ -23,7 +23,12 @@ class Cue(BaseModel):
 
 
 class SoundCue(Cue):
+    channel: int
     pass
+
+
+class DCAAssign(SoundCue):
+    dca: int
 
 
 class LightCue(Cue):
@@ -203,20 +208,27 @@ def auto_dca(lines, groups):
         d = len(dca)
         # set fader 0
         for character in groups.get(characters, [line[0]]):
-            if character in [chars for chars in dca]:
-                raise AssignmentException(
-                    f'{character} is already in active dca {dca} on line {l}: {line}'
-                )
+            # if character in sum(dca, []):
+            #     raise AssignmentException(
+            #         f'{character} is already in active dca {d} on line {l}: {line}, {dca}'
+            #     )
 
             # assign character to dca
             cue.append(
-                SoundCue(
+                DCAAssign(
+                    dca=d,
+                    channel=groups['ALL'].index(character),
                     n=l,
-                    action=f'dca assign {character}',
+                    action=f'dca assign {character} {d}',
                     notes=lines[l - 1][1],
-                    q=f'{character}: ... {last_n(lines[l - 1][1])}',
+                    q=f'{character} DCA {d}',
                 )
             )
+            if len(dca) != d:
+                # there's already a dca assigned. Add to group
+                dca[d].append(character)
+            else:
+                dca.append([character])
 
             # if character is muted:
             # unmute character
@@ -245,8 +257,11 @@ if __name__ == '__main__':
             'EDITH',
             'ISABEL',
             'KATE',
+            'CHORUS 1',
+            'CHORUS 2',
         ],
         'PIRATES': ['KING', 'SAMUEL', 'CHORUS 1', 'CHORUS 2'],
+        'KING/\nSAMUEL': ['KING', 'SAMUEL'],
         'GIRLS': ['EDITH', 'ISABEL', 'KATE'],
         'CHORUS': ['CHORUS 1', 'CHORUS 2', 'EDITH', 'ISABEL', 'KATE'],
         'ENSEMBLE': [
@@ -260,5 +275,4 @@ if __name__ == '__main__':
             'KATE',
         ],
     }
-
     pp(auto_dca(lines, groups))
