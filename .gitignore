@@ -1,0 +1,9 @@
+# media
+*.mp3
+*.mp4
+*.aiff
+*.wav
+
+# QLab
+*.qlab5backup
+Icon*
